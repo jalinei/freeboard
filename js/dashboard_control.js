@@ -17,16 +17,20 @@
         updateWidgetSetting(title, key, value) {
             const widget = getWidgetByTitle(title);
             if (widget && widget.settings()[key] !== undefined) {
-                widget.settings()[key] = value;
-                widget.widgetInstance.onSettingsChanged(widget.settings());
+                const newSettings = Object.assign({}, widget.settings());
+                newSettings[key] = value;
+                widget.settings(newSettings);
+                // freeboard's subscription on settings will invoke onSettingsChanged
             }
         },
 
         updateDatasourceSetting(name, key, value) {
             const ds = getDatasourceByName(name);
             if (ds && ds.settings()[key] !== undefined) {
-                ds.settings()[key] = value;
-                ds.instance.onSettingsChanged(ds.settings());
+                const newSettings = Object.assign({}, ds.settings());
+                newSettings[key] = value;
+                ds.settings(newSettings);
+                // datasource instance will be notified via Knockout
             }
         }
     };

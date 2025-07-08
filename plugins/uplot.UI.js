@@ -150,13 +150,17 @@
                 return;
             }
 
+
+            const yMinVal = parseFloat(this.controls.yMin.val());
+            const yMaxVal = parseFloat(this.controls.yMax.val());
+
             const updatedSettings = {
                 ...widget.settings(),
                 duration: parseInt(this.controls.duration.val()) || 20000,
                 refreshRate: parseInt(this.controls.refreshRate.val()) || 1000,
                 yLabel: this.controls.yLabel.val() || "Value",
-                yMin: parseFloat(this.controls.yMin.val()),
-                yMax: parseFloat(this.controls.yMax.val()),
+                yMin: isNaN(yMinVal) ? undefined : yMinVal,
+                yMax: isNaN(yMaxVal) ? undefined : yMaxVal,
                 showLegend: this.controls.showLegend.prop("checked")
             };
 
