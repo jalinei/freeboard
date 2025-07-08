@@ -70,6 +70,17 @@ DatasourceModel = function(theFreeboardModel, datasourcePlugins) {
 	this.last_updated = ko.observable("never");
 	this.last_error = ko.observable();
 
+	this.settings.subscribe(function(newValue)
+	{
+		if(!_.isUndefined(self.datasourceInstance) && _.isFunction(self.datasourceInstance.onSettingsChanged))
+		{
+			self.datasourceInstance.onSettingsChanged(newValue);
+		}
+
+		// Emit live config update
+		freeboard.emit("config_updated", theFreeboardModel.getCurrentConfig());
+	});
+
 	this.serialize = function()
 	{
 		return {
@@ -362,6 +373,41 @@ function FreeboardModel(datasourcePlugins, widgetPlugins, freeboardUI)
 			self.plugins.push(pluginSource);
 		}
 	}
+
+	this.getCurrentConfig = function() {
+		const config = {
+			datasources: [],
+			widgets: []
+		};
+
+		// Gather all datasource settings
+		_.each(self.datasources(), function(datasource) {
+			if (typeof datasource.serialize === "function") {
+				config.datasources.push({
+					name: datasource.name(),
+					settings: datasource.settings(), // live config
+					fullConfig: datasource.serialize() // optional full serialization
+				});
+			}
+		});
+
+		// Gather all widget settings from all panes
+		_.each(self.panes(), function(pane) {
+			_.each(pane.widgets(), function(widget) {
+				if (typeof widget.serialize === "function") {
+					config.widgets.push({
+						name: widget.title ? widget.title() : "Unnamed Widget",
+						type: widget.type ? widget.type() : null,
+						settings: widget.settings(),
+						fullConfig: widget.serialize(),
+						pane: pane.title ? pane.title() : null
+					});
+				}
+			});
+		});
+
+		return config;
+	};
 
 	this.serialize = function()
 	{
@@ -2232,6 +2278,9 @@ function WidgetModel(theFreeboardModel, widgetPlugins) {
 
 		self.updateCalculatedSettings();
 		self._heightUpdate.valueHasMutated();
+
+		// Emit live config update
+		freeboard.emit("config_updated", theFreeboardModel.getCurrentConfig());
 	});
 
 	this.processDatasourceUpdate = function (datasourceName) {
@@ -2884,6 +2933,13 @@ var freeboard = (function()
 		loadDashboard       : function(configuration, callback)
 		{
 			theFreeboardModel.loadDashboard(configuration, callback);
+		},
+		getCurrentConfig	: function()
+		{
+			return theFreeboardModel.getCurrentConfig();
+		},
+		getLiveModel: function() {
+			return theFreeboardModel;
 		},
 		serialize           : function()
 		{
