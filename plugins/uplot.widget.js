@@ -56,7 +56,7 @@
                 scales: {
                     x: { time: true },
                     y: {
-                        auto: false,
+                        auto: this.settings.yMin === undefined && this.settings.yMax === undefined,
                         min: this.settings.yMin !== undefined ? this.settings.yMin : null,
                         max: this.settings.yMax !== undefined ? this.settings.yMax : null,
                     }
