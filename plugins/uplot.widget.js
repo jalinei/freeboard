@@ -30,6 +30,7 @@
             this.seriesCount = 0;
             this.dataBuffer = [[], []]; // [timestamps, [series1, series2, ...]]
             this.maxPoints = 2000;
+            this.lastRender = 0;
         }
 
         render(containerElement) {
@@ -108,8 +109,12 @@
                 }
             }
 
-            // Update chart
-            this.plot.setData(this.dataBuffer);
+            // Update chart respecting refreshRate
+            const refresh = parseInt(this.settings.refreshRate) || 1000;
+            if (now - this.lastRender >= refresh) {
+                this.plot.setData(this.dataBuffer);
+                this.lastRender = now;
+            }
         }
 
         _resetPlot() {
@@ -125,6 +130,7 @@
             }
 
             this.dataBuffer = [[], ...Array(this.seriesCount).fill().map(() => [])];
+            this.lastRender = 0;
             this._initPlot(series);
         }
 
@@ -133,11 +139,15 @@
             const needsReset = ['duration', 'yMin', 'yMax', 'yLabel', 'showLegend'].some(
                 key => newSettings[key] !== this.settings[key]
             );
+            const rateChanged = newSettings.refreshRate !== this.settings.refreshRate;
 
             this.settings = newSettings;
 
             if (needsReset && this.plot) {
                 this._resetPlot();
+            }
+            if (rateChanged) {
+                this.lastRender = 0;
             }
         }
 
