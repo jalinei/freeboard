@@ -57,8 +57,10 @@
                     x: { time: true },
                     y: {
                         auto: this.settings.yMin === undefined && this.settings.yMax === undefined,
-                        min: this.settings.yMin !== undefined ? this.settings.yMin : null,
-                        max: this.settings.yMax !== undefined ? this.settings.yMax : null,
+                        range: [
+                            this.settings.yMin !== undefined ? this.settings.yMin : null,
+                            this.settings.yMax !== undefined ? this.settings.yMax : null,
+                        ]
                     }
                 },
                 axes: [
